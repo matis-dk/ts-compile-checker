@@ -1,0 +1,31 @@
+{
+  "name": "ts-compile-checker",
+  "description": "Checking that you can compile one or multiple of your typescript projects",
+  "homepage": "https://github.com/matis-dk/ts-compile-checker",
+  "author": {
+    "name": "Mathias Piletti",
+    "email": "mathiasp50@gmail.com"
+  },
+  "keywords": [
+    "typescript",
+    "tsc",
+    "cli",
+    "github",
+    "action",
+    "compile",
+    "microservices",
+    "ci"
+  ],
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@types/node": "^14.14.22",
+    "glob": "^7.1.6",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  },
+  "scripts": {
+    "start": "ts-node src/check.ts"
+  }
+}
