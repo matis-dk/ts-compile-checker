@@ -16,8 +16,12 @@
     "microservices",
     "ci"
   ],
+  "main": "dist/index.js",
   "version": "1.0.0",
   "license": "MIT",
+  "bin": {
+    "ts-compile-checker": "./dist/index.js"
+  },
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@types/node": "^14.14.22",
@@ -26,6 +30,7 @@
     "typescript": "^3.9.7"
   },
   "scripts": {
-    "start": "ts-node src/check.ts"
+    "start": "ts-node src/index.ts",
+    "build": "tsc"
   }
 }

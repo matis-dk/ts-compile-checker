@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import * as glob from "glob";
 import * as core from "@actions/core";
 
@@ -23,8 +24,9 @@ log("Started TS compile checker");
 function getProjects(): Promise<string[]> {
   log("🔍 Searching for projects with a tsconfig.json file");
   return new Promise((res, _) => {
-    glob("../**/tsconfig.json", {}, function (err, files) {
+    glob("./**/tsconfig.json", {}, function (err, files) {
       if (err) {
+        log(err);
         throw new Error("Failed search for tsconfig.json files");
       }
 
