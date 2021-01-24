@@ -23,17 +23,16 @@ log("Started TS compile checker");
 function getProjects(): Promise<string[]> {
   log("🔍 Searching for projects with a tsconfig.json file");
   return new Promise((res, _) => {
-    glob("./**/tsconfig.json", {}, function (err, files) {
+    const globOptions = {
+      ignore: ["**/node_modules/**"],
+    };
+    glob("**/tsconfig.json", globOptions, (err, files) => {
       if (err) {
         log(err);
         throw new Error("Failed search for tsconfig.json files");
       }
 
-      const projects = files
-        .filter(
-          (f) => !(f.includes("node_modules") || f.includes("ts-compile-check"))
-        )
-        .map((path) => path.replace("/tsconfig.json", ""));
+      const projects = files.map((path) => path.replace("/tsconfig.json", ""));
 
       log("📝 Projects found");
       console.table(projects.map((project) => ({ path: project })));
