@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 import * as glob from "glob";
 import * as core from "@actions/core";
-
 import * as child from "child_process";
 
 const { spawnSync } = child;
@@ -17,7 +16,7 @@ log("Started TS compile checker");
 
 (async function start() {
   const projects = await getProjects();
-  const compileErrors = runTypescriptCheck(projects);
+  const compileErrors = runCompilationChecks(projects);
   logErrors(compileErrors);
 })();
 
@@ -37,17 +36,17 @@ function getProjects(): Promise<string[]> {
         .map((path) => path.replace("/tsconfig.json", ""));
 
       log("📝 Projects found");
-      console.table(projects);
+      console.table(projects.map((project) => ({ path: project })));
 
       res(projects);
     });
   });
 }
 
-function runTypescriptCheck(projectPaths: string[]) {
+function runCompilationChecks(projectPaths: string[]) {
   try {
     const compileErrors: CompileError[] = [];
-    core.info("🛠️ Checking for typescript compilation errors");
+    core.info("🛠️  Checking for typescript compilation errors");
 
     projectPaths.forEach((projectPath) => {
       const tscArgs = ["--noEmit", "--pretty"];
@@ -78,7 +77,7 @@ function runTypescriptCheck(projectPaths: string[]) {
 function logErrors(compileErrors: CompileError[]) {
   if (compileErrors.length) {
     core.setFailed(
-      `❌ Failed to compile ${compileErrors.length} project${
+      `❌  Failed to compile ${compileErrors.length} project${
         compileErrors.length > 1 ? `s` : ""
       }`
     );
@@ -95,6 +94,6 @@ function logErrors(compileErrors: CompileError[]) {
     });
     process.exit();
   } else {
-    log(`✔️ Successfully compiled all projects`);
+    log("✔️  Successfully compiled all projects");
   }
 }

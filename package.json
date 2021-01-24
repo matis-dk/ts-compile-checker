@@ -17,7 +17,7 @@
     "ci"
   ],
   "main": "dist/index.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "bin": {
     "ts-compile-checker": "./dist/index.js"
@@ -31,6 +31,7 @@
   },
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc"
+    "build": "tsc",
+    "publish": "yarn build && npm publish"
   }
 }

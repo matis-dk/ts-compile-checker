@@ -51,7 +51,7 @@ log("Started TS compile checker");
                 case 0: return [4 /*yield*/, getProjects()];
                 case 1:
                     projects = _a.sent();
-                    compileErrors = runTypescriptCheck(projects);
+                    compileErrors = runCompilationChecks(projects);
                     logErrors(compileErrors);
                     return [2 /*return*/];
             }
@@ -66,20 +66,19 @@ function getProjects() {
                 log(err);
                 throw new Error("Failed search for tsconfig.json files");
             }
-            log(files);
             var projects = files
                 .filter(function (f) { return !(f.includes("node_modules") || f.includes("ts-compile-check")); })
                 .map(function (path) { return path.replace("/tsconfig.json", ""); });
             log("📝 Projects found");
-            console.table(projects);
+            console.table(projects.map(function (project) { return ({ path: project }); }));
             res(projects);
         });
     });
 }
-function runTypescriptCheck(projectPaths) {
+function runCompilationChecks(projectPaths) {
     try {
         var compileErrors_1 = [];
-        core.info("🛠️ Checking for typescript compilation errors");
+        core.info("🛠️  Checking for typescript compilation errors");
         projectPaths.forEach(function (projectPath) {
             var _a, _b;
             var tscArgs = ["--noEmit", "--pretty"];
@@ -105,7 +104,7 @@ function runTypescriptCheck(projectPaths) {
 }
 function logErrors(compileErrors) {
     if (compileErrors.length) {
-        core.setFailed("\u274C Failed to compile " + compileErrors.length + " project" + (compileErrors.length > 1 ? "s" : ""));
+        core.setFailed("\u274C  Failed to compile " + compileErrors.length + " project" + (compileErrors.length > 1 ? "s" : ""));
         compileErrors.forEach(function (c) {
             console.log("------------------------");
             if (c.stdout) {
@@ -119,6 +118,6 @@ function logErrors(compileErrors) {
         process.exit();
     }
     else {
-        log("\u2714\uFE0F Successfully compiled all projects");
+        log("✔️  Successfully compiled all projects");
     }
 }
