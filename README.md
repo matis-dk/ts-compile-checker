@@ -1,19 +1,52 @@
-<h3 align="center">
+<h1 align="center">
  Typescript compile checker
-</h3>
+</h1>
 
-[![PRs welcome!](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
+[![PRs welcome!](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/matis-dk/ts-compile-checker/pulls)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/matis-dk/ts-compile-checker/blob/master/LICENSE)
 
-## Installation
+## Description
+
+Managing a microservice architecture with multiple shared Typescript types quickly become cumbersome, if the compiler isn't watching the involed sub-projects.
+
+This package solves those issues by:
+
+1. Recursively searching for `tsconfig.json` files in a specified directory
+2. Installing `package.json` dependencies
+3. Running the `tsc` compiler located in `node_modules/.bin/tsc` for each sub-project.
+
+## Usage
+
+#### CLI
 
 ```
 npx ts-compile-checker
 ```
 
-## Code of Conduct
+#### Package.json script
 
-Help us keep _fastlane_ open and inclusive. Please read and follow our [Code of Conduct](https://github.com/fastlane/fastlane/blob/master/CODE_OF_CONDUCT.md).
+```
+{
+  "dependencies": {
+    "ts-compile-check": "^1.0.3",
+  },
+  "scripts": {
+    "ts-compile-check": "node ts-compile-checker",
+  }
+}
+```
+
+Installation
+
+```
+yarn add ts-compile-checker
+```
+
+Run
+
+```
+yarn run ts-compile-checker
+```
 
 ## License
 
