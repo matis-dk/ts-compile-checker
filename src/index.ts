@@ -3,6 +3,8 @@ import * as core from "@actions/core";
 import * as child from "child_process";
 import * as fg from "fast-glob";
 import * as fs from "fs";
+import * as chalk from "chalk";
+
 import { promisify } from "util";
 
 const readFile = promisify(fs.readFile);
@@ -12,32 +14,25 @@ const isCI = Boolean(process.env.CI);
 const argInstall = true;
 const tscBin = `node_modules/.bin/tsc`;
 
-type CompileError = {
-  projectPath: string;
-  stdout: string | null;
-  stderr: string | null;
-  output: any;
-};
-
-log("Started TS compile checker");
-
 (async function start() {
   const projects = await getProjects();
-  const compileErrors = await runCompilationChecks(
-    projects.filter((p) => p !== "api")
+  const compileErrors: number = await runCompilationChecks(projects);
+  log(
+    `\n${
+      compileErrors ? "😕" : "👏"
+    } Finished with ${compileErrors} compilation errors!`
   );
-  logErrors(compileErrors);
 })();
 
 async function getProjects(): Promise<string[]> {
-  log("🔍 Searching for projects with a tsconfig.json file");
-  const timeSearchStart = process.hrtime.bigint();
+  log(chalk.bold("🔍 Searching for projects with a tsconfig.json file"));
+  const tSearchStart = process.hrtime.bigint();
 
   try {
     const files = await fg("**/tsconfig.json", {
       ignore: ["**/node_modules/**", "**/build/**", "**/dist/**"],
     });
-    const timeSearchEnd = process.hrtime.bigint();
+    const tSearchEnd = process.hrtime.bigint();
 
     const projects = files.map((path) => {
       if (path === "tsconfig.json") {
@@ -47,10 +42,10 @@ async function getProjects(): Promise<string[]> {
       }
     });
 
-    log("\n📝 Projects found");
-    logDiffStartEnd("\n⏰ Search took", timeSearchStart, timeSearchEnd);
-
+    log(chalk.bold("\n📝 Projects found"));
     console.table(projects.map((project) => ({ path: project })));
+
+    logDiffStartEnd(chalk.bold("\n⏰ Search took"), tSearchStart, tSearchEnd);
 
     return projects;
   } catch (err) {
@@ -60,9 +55,9 @@ async function getProjects(): Promise<string[]> {
 }
 
 async function runCompilationChecks(projectPaths: string[]) {
+  let compileErrors = 0;
   try {
-    const compileErrors: CompileError[] = [];
-    log("\n🛠️  Checking for typescript compilation errors");
+    log(chalk.bold("\n🛠️  Checking for typescript compilation errors"));
 
     for await (const projectPath of projectPaths) {
       const tscArgs = ["--noEmit", "--pretty"];
@@ -70,7 +65,7 @@ async function runCompilationChecks(projectPaths: string[]) {
         cwd: projectPath,
       };
 
-      log(`\n👉 Project [${projectPath}]`);
+      log(chalk.bold(`\n👉 Project [${projectPath}]`));
 
       /** INSTALLATION */
       if (argInstall) {
@@ -98,14 +93,16 @@ async function runCompilationChecks(projectPaths: string[]) {
       log("• tsc compilling");
       const output = spawnSync(tscBin, tscArgs, options);
 
-      /** ADDING COMPILE ERRORS */
-      if (output.status !== 0) {
-        compileErrors.push({
-          projectPath,
-          stdout: output.stdout?.toString(),
-          stderr: output.stderr?.toString(),
-          output,
-        });
+      /** LOGGING */
+      if (output.status === 0) {
+        log("✔️  Compiled successfully ");
+      } else {
+        compileErrors += 1;
+        const stdout = output.stdout.toString();
+        const stderr = output.stdout.toString();
+        log(`❌  Compilation failed`, { level: "ERROR" });
+        Boolean(stdout) && log(stdout, { level: "ERROR" });
+        Boolean(stderr) && log(stderr, { level: "ERROR" });
       }
     }
 
@@ -117,26 +114,6 @@ async function runCompilationChecks(projectPaths: string[]) {
 }
 
 // Utilities ----------------------------------------
-
-function logErrors(compileErrors: CompileError[]) {
-  if (compileErrors.length) {
-    log(`\n❌  Failed to compile ${compileErrors.length} projects`, {
-      level: "ERROR",
-    });
-    compileErrors.forEach((c) => {
-      console.log("------------------------");
-      if (c.stdout) {
-        log(c.stdout, { level: "ERROR" });
-      }
-      if (c.stderr) {
-        log(c.stderr, { level: "ERROR" });
-      }
-      console.log(c);
-    });
-  } else {
-    log("\n✔️  Successfully compiled all projects");
-  }
-}
 
 function logDiffStartEnd(label: string, start: bigint, end: bigint) {
   const NS_PER_MS = BigInt(1e6);

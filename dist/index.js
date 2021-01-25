@@ -48,13 +48,13 @@ var core = require("@actions/core");
 var child = require("child_process");
 var fg = require("fast-glob");
 var fs = require("fs");
+var chalk = require("chalk");
 var util_1 = require("util");
 var readFile = util_1.promisify(fs.readFile);
 var spawnSync = child.spawnSync;
 var isCI = Boolean(process.env.CI);
 var argInstall = true;
 var tscBin = "node_modules/.bin/tsc";
-log("Started TS compile checker");
 (function start() {
     return __awaiter(this, void 0, void 0, function () {
         var projects, compileErrors;
@@ -63,10 +63,10 @@ log("Started TS compile checker");
                 case 0: return [4 /*yield*/, getProjects()];
                 case 1:
                     projects = _a.sent();
-                    return [4 /*yield*/, runCompilationChecks(projects.filter(function (p) { return p !== "api"; }))];
+                    return [4 /*yield*/, runCompilationChecks(projects)];
                 case 2:
                     compileErrors = _a.sent();
-                    logErrors(compileErrors);
+                    log("\n" + (compileErrors ? "😕" : "👏") + " Finished with " + compileErrors + " compilation errors!");
                     return [2 /*return*/];
             }
         });
@@ -74,12 +74,12 @@ log("Started TS compile checker");
 })();
 function getProjects() {
     return __awaiter(this, void 0, void 0, function () {
-        var timeSearchStart, files, timeSearchEnd, projects, err_1;
+        var tSearchStart, files, tSearchEnd, projects, err_1;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    log("🔍 Searching for projects with a tsconfig.json file");
-                    timeSearchStart = process.hrtime.bigint();
+                    log(chalk.bold("🔍 Searching for projects with a tsconfig.json file"));
+                    tSearchStart = process.hrtime.bigint();
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
@@ -88,7 +88,7 @@ function getProjects() {
                         })];
                 case 2:
                     files = _a.sent();
-                    timeSearchEnd = process.hrtime.bigint();
+                    tSearchEnd = process.hrtime.bigint();
                     projects = files.map(function (path) {
                         if (path === "tsconfig.json") {
                             return ".";
@@ -97,9 +97,9 @@ function getProjects() {
                             return path.replace("/tsconfig.json", "");
                         }
                     });
-                    log("\n📝 Projects found");
-                    logDiffStartEnd("\n⏰ Search took", timeSearchStart, timeSearchEnd);
+                    log(chalk.bold("\n📝 Projects found"));
                     console.table(projects.map(function (project) { return ({ path: project }); }));
+                    logDiffStartEnd(chalk.bold("\n⏰ Search took"), tSearchStart, tSearchEnd);
                     return [2 /*return*/, projects];
                 case 3:
                     err_1 = _a.sent();
@@ -113,121 +113,105 @@ function getProjects() {
 function runCompilationChecks(projectPaths) {
     var projectPaths_1, projectPaths_1_1;
     var e_1, _a;
-    var _b, _c;
     return __awaiter(this, void 0, void 0, function () {
-        var compileErrors, projectPath, tscArgs, options, err_2, _1, output, e_1_1, err_3;
-        return __generator(this, function (_d) {
-            switch (_d.label) {
+        var compileErrors, projectPath, tscArgs, options, err_2, _1, output, stdout, stderr, e_1_1, err_3;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    _d.trys.push([0, 21, , 22]);
-                    compileErrors = [];
-                    log("\n🛠️  Checking for typescript compilation errors");
-                    _d.label = 1;
+                    compileErrors = 0;
+                    _b.label = 1;
                 case 1:
-                    _d.trys.push([1, 14, 15, 20]);
+                    _b.trys.push([1, 22, , 23]);
+                    log(chalk.bold("\n🛠️  Checking for typescript compilation errors"));
+                    _b.label = 2;
+                case 2:
+                    _b.trys.push([2, 15, 16, 21]);
                     projectPaths_1 = __asyncValues(projectPaths);
-                    _d.label = 2;
-                case 2: return [4 /*yield*/, projectPaths_1.next()];
-                case 3:
-                    if (!(projectPaths_1_1 = _d.sent(), !projectPaths_1_1.done)) return [3 /*break*/, 13];
+                    _b.label = 3;
+                case 3: return [4 /*yield*/, projectPaths_1.next()];
+                case 4:
+                    if (!(projectPaths_1_1 = _b.sent(), !projectPaths_1_1.done)) return [3 /*break*/, 14];
                     projectPath = projectPaths_1_1.value;
                     tscArgs = ["--noEmit", "--pretty"];
                     options = {
                         cwd: projectPath
                     };
-                    log("\n\uD83D\uDC49 Project [" + projectPath + "]");
-                    if (!argInstall) return [3 /*break*/, 8];
-                    _d.label = 4;
-                case 4:
-                    _d.trys.push([4, 6, , 7]);
+                    log(chalk.bold("\n\uD83D\uDC49 Project [" + projectPath + "]"));
+                    if (!argInstall) return [3 /*break*/, 9];
+                    _b.label = 5;
+                case 5:
+                    _b.trys.push([5, 7, , 8]);
                     return [4 /*yield*/, readFile(projectPath + "/package.json", {
                             encoding: "utf8"
                         }).then(JSON.parse)];
-                case 5:
-                    _d.sent();
-                    return [3 /*break*/, 7];
                 case 6:
-                    err_2 = _d.sent();
+                    _b.sent();
+                    return [3 /*break*/, 8];
+                case 7:
+                    err_2 = _b.sent();
                     log("\u2757  Can't find/parse package.json. Skipping!", {
                         level: "WARN"
                     });
-                    return [3 /*break*/, 12];
-                case 7:
+                    return [3 /*break*/, 13];
+                case 8:
                     log("• yarn install");
                     spawnSync("yarn", ["install"], options);
-                    _d.label = 8;
-                case 8:
-                    _d.trys.push([8, 10, , 11]);
-                    return [4 /*yield*/, readFile(projectPath + "/" + tscBin)];
+                    _b.label = 9;
                 case 9:
-                    _d.sent();
-                    return [3 /*break*/, 11];
+                    _b.trys.push([9, 11, , 12]);
+                    return [4 /*yield*/, readFile(projectPath + "/" + tscBin)];
                 case 10:
-                    _1 = _d.sent();
-                    log("\u2757  Can't find 'tsc' in " + tscBin + ". Skipping!", { level: "WARN" });
+                    _b.sent();
                     return [3 /*break*/, 12];
                 case 11:
+                    _1 = _b.sent();
+                    log("\u2757  Can't find 'tsc' in " + tscBin + ". Skipping!", { level: "WARN" });
+                    return [3 /*break*/, 13];
+                case 12:
                     log("• tsc compilling");
                     output = spawnSync(tscBin, tscArgs, options);
-                    /** ADDING COMPILE ERRORS */
-                    if (output.status !== 0) {
-                        compileErrors.push({
-                            projectPath: projectPath,
-                            stdout: (_b = output.stdout) === null || _b === void 0 ? void 0 : _b.toString(),
-                            stderr: (_c = output.stderr) === null || _c === void 0 ? void 0 : _c.toString(),
-                            output: output
-                        });
+                    /** LOGGING */
+                    if (output.status === 0) {
+                        log("✔️  Compiled successfully ");
                     }
-                    _d.label = 12;
-                case 12: return [3 /*break*/, 2];
-                case 13: return [3 /*break*/, 20];
-                case 14:
-                    e_1_1 = _d.sent();
-                    e_1 = { error: e_1_1 };
-                    return [3 /*break*/, 20];
+                    else {
+                        compileErrors += 1;
+                        stdout = output.stdout.toString();
+                        stderr = output.stdout.toString();
+                        log("\u274C  Compilation failed", { level: "ERROR" });
+                        Boolean(stdout) && log(stdout, { level: "ERROR" });
+                        Boolean(stderr) && log(stderr, { level: "ERROR" });
+                    }
+                    _b.label = 13;
+                case 13: return [3 /*break*/, 3];
+                case 14: return [3 /*break*/, 21];
                 case 15:
-                    _d.trys.push([15, , 18, 19]);
-                    if (!(projectPaths_1_1 && !projectPaths_1_1.done && (_a = projectPaths_1["return"]))) return [3 /*break*/, 17];
-                    return [4 /*yield*/, _a.call(projectPaths_1)];
+                    e_1_1 = _b.sent();
+                    e_1 = { error: e_1_1 };
+                    return [3 /*break*/, 21];
                 case 16:
-                    _d.sent();
-                    _d.label = 17;
-                case 17: return [3 /*break*/, 19];
-                case 18:
+                    _b.trys.push([16, , 19, 20]);
+                    if (!(projectPaths_1_1 && !projectPaths_1_1.done && (_a = projectPaths_1["return"]))) return [3 /*break*/, 18];
+                    return [4 /*yield*/, _a.call(projectPaths_1)];
+                case 17:
+                    _b.sent();
+                    _b.label = 18;
+                case 18: return [3 /*break*/, 20];
+                case 19:
                     if (e_1) throw e_1.error;
                     return [7 /*endfinally*/];
-                case 19: return [7 /*endfinally*/];
-                case 20: return [2 /*return*/, compileErrors];
-                case 21:
-                    err_3 = _d.sent();
+                case 20: return [7 /*endfinally*/];
+                case 21: return [2 /*return*/, compileErrors];
+                case 22:
+                    err_3 = _b.sent();
                     log("ERROR: Failed to run childProcess", { level: "ERROR" });
                     throw new Error(err_3);
-                case 22: return [2 /*return*/];
+                case 23: return [2 /*return*/];
             }
         });
     });
 }
 // Utilities ----------------------------------------
-function logErrors(compileErrors) {
-    if (compileErrors.length) {
-        log("\n\u274C  Failed to compile " + compileErrors.length + " projects", {
-            level: "ERROR"
-        });
-        compileErrors.forEach(function (c) {
-            console.log("------------------------");
-            if (c.stdout) {
-                log(c.stdout, { level: "ERROR" });
-            }
-            if (c.stderr) {
-                log(c.stderr, { level: "ERROR" });
-            }
-            console.log(c);
-        });
-    }
-    else {
-        log("\n✔️  Successfully compiled all projects");
-    }
-}
 function logDiffStartEnd(label, start, end) {
     var NS_PER_MS = BigInt(1e6);
     var diff = Math.round(Number((end - start) / NS_PER_MS));

@@ -17,7 +17,7 @@
     "ci"
   ],
   "main": "dist/index.js",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "bin": {
     "ts-compile-checker": "./dist/index.js"
@@ -25,12 +25,14 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@types/node": "^14.14.22",
+    "chalk": "^4.1.0",
     "fast-glob": "^3.2.5",
     "ts-node": "^8.10.2",
     "typescript": "^3.9.7"
   },
   "scripts": {
     "start": "ts-node src/index.ts",
+    "watch": "tsc -w",
     "build": "tsc",
     "deploy": "yarn build && npm publish"
   }
