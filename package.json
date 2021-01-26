@@ -29,6 +29,7 @@
     "@types/node": "^14.14.22",
     "chalk": "^4.1.0",
     "command-line-args": "^5.1.1",
+    "command-line-docs": "^0.0.6",
     "command-line-usage": "^6.1.1",
     "fast-glob": "^3.2.5",
     "ts-node": "^8.10.2",

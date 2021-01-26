@@ -1,5 +1,9 @@
-import * as commandLineUsage from "command-line-usage";
-import * as commandLineArgs from "command-line-args";
+import commandLineUsage from "command-line-usage";
+import commandLineArgs from "command-line-args";
+import docs from "command-line-docs";
+
+const projectName = "TS compile checker";
+const projectDescription = "Validating compilation of multiple TS projects";
 
 const optionDefinitions = [
   {
@@ -26,7 +30,7 @@ const optionDefinitions = [
   },
   {
     name: "exclude",
-    description: "Excluding a passed set of project paths.",
+    description: "Excluding a set of project paths.",
     alias: "e",
     defaultValue: [],
     type: Array,
@@ -34,7 +38,7 @@ const optionDefinitions = [
   {
     name: "options",
     description:
-      "Override the default options passed to the tsc compiler for each sub-project",
+      'Override the default options `["--noEmit", "--pretty"]` passed to the tsc compiler for each sub-project',
     alias: "o",
     defaultValue: ["--noEmit", "--pretty"],
     type: Array,
@@ -42,24 +46,42 @@ const optionDefinitions = [
   {
     name: "cwd",
     description:
-      "Current working directory the search should be based on. Default is `.`. You can ",
+      "Current working directory that the search process should be based on. Default directory is `.`.",
     alias: "c",
     defaultValue: ".",
     type: String,
   },
+  {
+    name: "version",
+    description: "Current version of the project.",
+    alias: "v",
+    defaultValue: false,
+    type: Boolean,
+  },
 ];
+
+if (process.argv.includes("docs")) {
+  const cliMarkdownDocs = docs({
+    name: projectName,
+    description: projectDescription,
+    options: optionDefinitions,
+  });
+  console.log(cliMarkdownDocs);
+  process.exit();
+}
 
 export const cliUsage = commandLineUsage([
   {
-    header: "TS compile checker",
-    content: "Validating compilation of multiple TS projects",
+    header: projectName,
+    content: projectDescription,
   },
   {
     header: "Options",
     optionList: optionDefinitions,
   },
   {
-    content: "Project home: {underline https://github.com/me/example}",
+    content:
+      "Project home: {underline https://github.com/matis-dk/ts-compile-checker}",
   },
 ]);
 
@@ -70,6 +92,7 @@ type Args = {
   exclude: Array<string>;
   options: Array<string>;
   cwd: string;
+  version: boolean;
 };
 
 export const cliArguments = commandLineArgs(optionDefinitions) as Args;

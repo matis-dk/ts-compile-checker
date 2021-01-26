@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import * as child from "child_process";
-import * as fg from "fast-glob";
-import * as fs from "fs";
-import * as chalk from "chalk";
+import fg from "fast-glob";
+import child from "child_process";
+import fs from "fs";
+import chalk from "chalk";
 import { promisify } from "util";
 
 import { cliArguments, cliUsage } from "./cli";
@@ -10,6 +10,11 @@ import { log, logDiffStartEnd } from "./logging";
 
 if (cliArguments.help) {
   console.log(cliUsage);
+  process.exit();
+}
+
+if (cliArguments.version) {
+  console.log(process.env.npm_package_version);
   process.exit();
 }
 
@@ -31,7 +36,7 @@ const tscArgs = cliArguments.options;
   log(
     `\n${
       compileErrors ? "😕" : "👏"
-    } Finished with ${compileErrors} compilation errors!`
+    } Finished with ${compileErrors} compilation error!`
   );
 })();
 

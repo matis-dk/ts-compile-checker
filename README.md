@@ -49,6 +49,17 @@ Run
 yarn run ts-compile-checker
 ```
 
+## Options
+
+| Flag              | Type    | Description                                                                                             |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------- |
+| `--help`, `-h`    | Boolean | Display this usage guide.                                                                               |
+| `--skip`, `-s`    | Boolean | Skipping the installation process.                                                                      |
+| `--include`, `-i` | Array   | Pass your own set of project paths. This will skip the search process.                                  |
+| `--exclude`, `-e` | Array   | Excluding a set of project paths.                                                                       |
+| `--options`, `-o` | Array   | Override the default options `["--noEmit", "--pretty"]` passed to the tsc compiler for each sub-project |
+| `--cwd`, `-c`     | String  | Current working directory that the search process should be based on. Default directory is `.`.         |
+
 ## License
 
 This project is licensed under the terms of the MIT license. See the [LICENSE](LICENSE) file.

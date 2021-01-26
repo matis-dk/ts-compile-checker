@@ -43,11 +43,14 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 exports.__esModule = true;
-var child = require("child_process");
-var fg = require("fast-glob");
-var fs = require("fs");
-var chalk = require("chalk");
+var fast_glob_1 = __importDefault(require("fast-glob"));
+var child_process_1 = __importDefault(require("child_process"));
+var fs_1 = __importDefault(require("fs"));
+var chalk_1 = __importDefault(require("chalk"));
 var util_1 = require("util");
 var cli_1 = require("./cli");
 var logging_1 = require("./logging");
@@ -55,8 +58,12 @@ if (cli_1.cliArguments.help) {
     console.log(cli_1.cliUsage);
     process.exit();
 }
-var readFile = util_1.promisify(fs.readFile);
-var spawnSync = child.spawnSync;
+if (cli_1.cliArguments.version) {
+    console.log(process.env.npm_package_version);
+    process.exit();
+}
+var readFile = util_1.promisify(fs_1["default"].readFile);
+var spawnSync = child_process_1["default"].spawnSync;
 var tscBin = "node_modules/.bin/tsc";
 var tscArgs = cli_1.cliArguments.options;
 (function start() {
@@ -87,16 +94,16 @@ function getProjects() {
             switch (_a.label) {
                 case 0:
                     if (cli_1.cliArguments.include.length) {
-                        logging_1.log(chalk.bold("\n📝 Using projects paths. Skipping search"));
+                        logging_1.log(chalk_1["default"].bold("\n📝 Using projects paths. Skipping search"));
                         console.table(cli_1.cliArguments.include.map(function (project) { return ({ path: project }); }));
                         return [2 /*return*/, Promise.resolve(cli_1.cliArguments.include)];
                     }
-                    logging_1.log(chalk.bold("\n🔍 Searching for projects with a tsconfig.json file"));
+                    logging_1.log(chalk_1["default"].bold("\n🔍 Searching for projects with a tsconfig.json file"));
                     tSearchStart = process.hrtime.bigint();
                     _a.label = 1;
                 case 1:
                     _a.trys.push([1, 3, , 4]);
-                    return [4 /*yield*/, fg(cli_1.cliArguments.cwd + "/**/tsconfig.json", {
+                    return [4 /*yield*/, fast_glob_1["default"](cli_1.cliArguments.cwd + "/**/tsconfig.json", {
                             ignore: ["**/node_modules/**", "**/build/**", "**/dist/**"]
                         })];
                 case 2:
@@ -108,14 +115,14 @@ function getProjects() {
                     })
                         .filter(function (p) {
                         if (cli_1.cliArguments.exclude.includes(p)) {
-                            logging_1.log(chalk.italic("   project path [" + p + "] excluded"));
+                            logging_1.log(chalk_1["default"].italic("   project path [" + p + "] excluded"));
                             return false;
                         }
                         return true;
                     });
-                    logging_1.log(chalk.bold("\n📝 Projects found"));
+                    logging_1.log(chalk_1["default"].bold("\n📝 Projects found"));
                     console.table(projects.map(function (p) { return ({ path: p }); }));
-                    logging_1.logDiffStartEnd(chalk.bold("\n⏰ Search took"), tSearchStart, tSearchEnd);
+                    logging_1.logDiffStartEnd(chalk_1["default"].bold("\n⏰ Search took"), tSearchStart, tSearchEnd);
                     return [2 /*return*/, projects];
                 case 3:
                     err_1 = _a.sent();
@@ -138,7 +145,7 @@ function runCompilationChecks(projectPaths) {
                     _b.label = 1;
                 case 1:
                     _b.trys.push([1, 22, , 23]);
-                    logging_1.log(chalk.bold("\n🛠️  Checking for typescript compilation errors"));
+                    logging_1.log(chalk_1["default"].bold("\n🛠️  Checking for typescript compilation errors"));
                     _b.label = 2;
                 case 2:
                     _b.trys.push([2, 15, 16, 21]);
@@ -151,7 +158,7 @@ function runCompilationChecks(projectPaths) {
                     options = {
                         cwd: projectPath
                     };
-                    logging_1.log(chalk.bold("\n\uD83D\uDC49 Project [" + projectPath + "]"));
+                    logging_1.log(chalk_1["default"].bold("\n\uD83D\uDC49 Project [" + projectPath + "]"));
                     if (!!cli_1.cliArguments.skip) return [3 /*break*/, 9];
                     _b.label = 5;
                 case 5:
