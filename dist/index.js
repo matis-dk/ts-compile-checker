@@ -50,12 +50,51 @@ var fg = require("fast-glob");
 var fs = require("fs");
 var chalk = require("chalk");
 var util_1 = require("util");
+var commandLineUsage = require("command-line-usage");
+var usage = commandLineUsage([
+    {
+        header: "A typical app",
+        content: "Generates something {italic very} important. This is a rather long, but ultimately inconsequential description intended solely to demonstrate description appearance. "
+    },
+    {
+        header: "Options",
+        optionList: [
+            {
+                name: "help",
+                description: "Display this usage guide.",
+                alias: "h",
+                type: Boolean
+            },
+            {
+                name: "src",
+                description: "The input files to process. This is some additional text existing solely to demonstrate word-wrapping, nothing more, nothing less. And nothing in between.",
+                type: String,
+                multiple: true,
+                defaultOption: true,
+                typeLabel: "{underline file} ..."
+            },
+            {
+                name: "timeout",
+                description: "Timeout value in ms.",
+                alias: "t",
+                type: Number,
+                typeLabel: "{underline ms}"
+            },
+        ]
+    },
+    {
+        content: "Project home: {underline https://github.com/me/example}"
+    },
+]);
+console.log(usage);
+console.log("done");
+process.exit();
 var readFile = util_1.promisify(fs.readFile);
 var spawnSync = child.spawnSync;
 var isCI = Boolean(process.env.CI);
 var argInstall = true;
 var tscBin = "node_modules/.bin/tsc";
-(function start() {
+var optionDefinitions = (function start() {
     return __awaiter(this, void 0, void 0, function () {
         var projects, compileErrors;
         return __generator(this, function (_a) {
@@ -66,7 +105,7 @@ var tscBin = "node_modules/.bin/tsc";
                     return [4 /*yield*/, runCompilationChecks(projects)];
                 case 2:
                     compileErrors = _a.sent();
-                    log("\n" + (compileErrors ? "😕" : "👏") + " Finished with " + compileErrors + " compilation errors!");
+                    log("\n" + (compileErrors ? "😕" : "👏") + " Finished with compilation errors in " + compileErrors + " projects!");
                     return [2 /*return*/];
             }
         });
@@ -78,7 +117,7 @@ function getProjects() {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    log(chalk.bold("🔍 Searching for projects with a tsconfig.json file"));
+                    log(chalk.bold("\n🔍 Searching for projects with a tsconfig.json file"));
                     tSearchStart = process.hrtime.bigint();
                     _a.label = 1;
                 case 1:

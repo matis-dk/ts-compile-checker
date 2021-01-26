@@ -1,21 +1,32 @@
 #!/usr/bin/env node
-import * as core from "@actions/core";
 import * as child from "child_process";
 import * as fg from "fast-glob";
 import * as fs from "fs";
 import * as chalk from "chalk";
-
 import { promisify } from "util";
+
+import { cliArguments, cliUsage } from "./cli";
+import { log, logDiffStartEnd } from "./logging";
+
+if (cliArguments.help) {
+  console.log(cliUsage);
+  process.exit();
+}
 
 const readFile = promisify(fs.readFile);
 const { spawnSync } = child;
 
-const isCI = Boolean(process.env.CI);
-const argInstall = true;
 const tscBin = `node_modules/.bin/tsc`;
+const tscArgs = cliArguments.options;
 
 (async function start() {
   const projects = await getProjects();
+
+  if (projects.length === 0) {
+    log(`\n🧐 Found 0 projects. Exiting early`);
+    return;
+  }
+
   const compileErrors: number = await runCompilationChecks(projects);
   log(
     `\n${
@@ -25,25 +36,35 @@ const tscBin = `node_modules/.bin/tsc`;
 })();
 
 async function getProjects(): Promise<string[]> {
-  log(chalk.bold("🔍 Searching for projects with a tsconfig.json file"));
+  if (cliArguments.include.length) {
+    log(chalk.bold("\n📝 Using projects paths. Skipping search"));
+    console.table(cliArguments.include.map((project) => ({ path: project })));
+    return Promise.resolve(cliArguments.include);
+  }
+
+  log(chalk.bold("\n🔍 Searching for projects with a tsconfig.json file"));
   const tSearchStart = process.hrtime.bigint();
 
   try {
-    const files = await fg("**/tsconfig.json", {
+    const files = await fg(`${cliArguments.cwd}/**/tsconfig.json`, {
       ignore: ["**/node_modules/**", "**/build/**", "**/dist/**"],
     });
     const tSearchEnd = process.hrtime.bigint();
 
-    const projects = files.map((path) => {
-      if (path === "tsconfig.json") {
-        return ".";
-      } else {
-        return path.replace("/tsconfig.json", "");
-      }
-    });
+    const projects = files
+      .map((path) =>
+        path === "tsconfig.json" ? "." : path.replace("/tsconfig.json", "")
+      )
+      .filter((p) => {
+        if (cliArguments.exclude.includes(p)) {
+          log(chalk.italic(`   project path [${p}] excluded`));
+          return false;
+        }
+        return true;
+      });
 
     log(chalk.bold("\n📝 Projects found"));
-    console.table(projects.map((project) => ({ path: project })));
+    console.table(projects.map((p) => ({ path: p })));
 
     logDiffStartEnd(chalk.bold("\n⏰ Search took"), tSearchStart, tSearchEnd);
 
@@ -60,7 +81,6 @@ async function runCompilationChecks(projectPaths: string[]) {
     log(chalk.bold("\n🛠️  Checking for typescript compilation errors"));
 
     for await (const projectPath of projectPaths) {
-      const tscArgs = ["--noEmit", "--pretty"];
       const options = {
         cwd: projectPath,
       };
@@ -68,7 +88,7 @@ async function runCompilationChecks(projectPaths: string[]) {
       log(chalk.bold(`\n👉 Project [${projectPath}]`));
 
       /** INSTALLATION */
-      if (argInstall) {
+      if (!cliArguments.skip) {
         try {
           await readFile(`${projectPath}/package.json`, {
             encoding: "utf8",
@@ -79,7 +99,7 @@ async function runCompilationChecks(projectPaths: string[]) {
           });
           continue;
         }
-        log("• yarn install");
+        log("•  yarn install");
         spawnSync("yarn", ["install"], options);
       }
 
@@ -90,7 +110,7 @@ async function runCompilationChecks(projectPaths: string[]) {
         log(`❗  Can't find 'tsc' in ${tscBin}. Skipping!`, { level: "WARN" });
         continue;
       }
-      log("• tsc compilling");
+      log("•  tsc compilling");
       const output = spawnSync(tscBin, tscArgs, options);
 
       /** LOGGING */
@@ -110,35 +130,5 @@ async function runCompilationChecks(projectPaths: string[]) {
   } catch (err) {
     log("ERROR: Failed to run childProcess", { level: "ERROR" });
     throw new Error(err);
-  }
-}
-
-// Utilities ----------------------------------------
-
-function logDiffStartEnd(label: string, start: bigint, end: bigint) {
-  const NS_PER_MS = BigInt(1e6);
-  const diff = Math.round(Number((end - start) / NS_PER_MS));
-  log(`${label} ${diff} ms`);
-}
-
-type Levels = "ERROR" | "WARN" | "INFO";
-type LogOptions = {
-  level: Levels;
-};
-function log(msg: string, options?: LogOptions) {
-  if (isCI) {
-    if (options?.level === "ERROR") {
-      core.setFailed(msg);
-    }
-
-    if (options?.level === "WARN") {
-      core.warning(msg);
-    }
-
-    if (options?.level === "INFO") {
-      core.info(msg);
-    }
-  } else {
-    console.log(msg);
   }
 }
