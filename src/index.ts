@@ -2,6 +2,7 @@
 import fg from "fast-glob";
 import child from "child_process";
 import chalk from "chalk";
+import path from "path";
 
 import { cliArguments, cliUsage } from "./cli";
 import { log, logDiffStartEnd } from "./logging";
@@ -51,15 +52,17 @@ async function getProjects(): Promise<string[]> {
   const tSearchStart = process.hrtime.bigint();
 
   try {
-    const files = await fg(`${cliArguments.cwd}/**/tsconfig.json`, {
+    const files = await fg(`**/tsconfig.json`, {
       ignore: ["**/node_modules/**", "**/build/**", "**/dist/**"],
+      cwd: cliArguments.cwd,
     });
     const tSearchEnd = process.hrtime.bigint();
 
     const projects = files
-      .map((path) =>
-        path === "tsconfig.json" ? "." : path.replace("/tsconfig.json", "")
+      .map((p) =>
+        p === "tsconfig.json" ? "." : p.replace("/tsconfig.json", "")
       )
+      .map((p) => path.join(cliArguments.cwd, p))
       .filter((p) => {
         if (cliArguments.exclude.includes(p)) {
           log(chalk.italic(`   project path [${p}] excluded`));

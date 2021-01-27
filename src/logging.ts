@@ -1,4 +1,5 @@
 import * as core from "@actions/core";
+import chalk from "chalk";
 
 const isCI = Boolean(process.env.CI);
 
@@ -13,19 +14,13 @@ type LogOptions = {
   level: Levels;
 };
 
-export function log(msg: string, options?: LogOptions) {
+export function log(msg: string, options: LogOptions = { level: "INFO" }) {
   if (isCI) {
-    if (options?.level === "ERROR") {
-      core.setFailed(msg);
-    }
+    if (options?.level === "ERROR") core.setFailed(msg);
 
-    if (options?.level === "WARN") {
-      core.warning(msg);
-    }
+    if (options?.level === "WARN") core.warning(msg);
 
-    if (options?.level === "INFO") {
-      console.log(msg);
-    }
+    if (options?.level === "INFO") core.info(msg);
   } else {
     console.log(msg);
   }
