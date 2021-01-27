@@ -2,6 +2,7 @@
  Typescript compile checker
 </h1>
 
+[![NPM!](https://img.shields.io/npm/v/ts-compile-checker)](https://www.npmjs.com/package/ts-compile-checker)
 [![PRs welcome!](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/matis-dk/ts-compile-checker/pulls)
 [![Downloads](https://img.shields.io/npm/dm/ts-compile-checker)](https://www.npmjs.com/package/ts-compile-checker)
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat)](https://github.com/matis-dk/ts-compile-checker/blob/master/LICENSE)
@@ -64,6 +65,16 @@ jobs:
       - run: npx ts-compile-checker
         working-directory: ./
 ```
+
+## Demo
+
+#### Usage
+
+<img src="./assets/usages.gif" alt="drawing" width="600" style="border-radius: 2px"/>
+
+#### Github Action
+
+<img src="./assets/github-action.png" alt="drawing" width="600" style="border-radius: 2px"/>
 
 ## Options
 
