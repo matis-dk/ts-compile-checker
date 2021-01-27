@@ -14,7 +14,7 @@ if (cliArguments.help) {
 }
 
 if (cliArguments.version) {
-  console.log(process.env.npm_package_version);
+  console.log(require("../package.json").version);
   process.exit();
 }
 

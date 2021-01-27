@@ -25,23 +25,26 @@ const optionDefinitions = [
     description:
       "Pass your own set of project paths. This will skip the search process.",
     alias: "i",
+    multiple: true,
     defaultValue: [],
-    type: Array,
+    type: String,
   },
   {
     name: "exclude",
     description: "Excluding a set of project paths.",
     alias: "e",
+    multiple: true,
     defaultValue: [],
-    type: Array,
+    type: String,
   },
   {
     name: "options",
     description:
       'Override the default options `["--noEmit", "--pretty"]` passed to the tsc compiler for each sub-project',
     alias: "o",
+    multiple: true,
     defaultValue: ["--noEmit", "--pretty"],
-    type: Array,
+    type: String,
   },
   {
     name: "cwd",
