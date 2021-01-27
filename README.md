@@ -20,8 +20,16 @@ This package solves those issues by:
 
 #### CLI
 
+Npx
+
 ```
 npx ts-compile-checker
+```
+
+Docker
+
+```
+docker run --rm -it -v $(pwd):/src:rw mkenney/npm:latest npx ts-compile-checker
 ```
 
 #### Package.json script
@@ -37,16 +45,24 @@ npx ts-compile-checker
 }
 ```
 
-Installation
+Install and run
 
 ```
-yarn add ts-compile-checker
+yarn add ts-compile-checker && yarn ts-compile-checker
 ```
 
-Run
+#### Github Action
 
 ```
-yarn run ts-compile-checker
+on: push
+name: TS compilation check
+jobs:
+  checker:
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+      - run: npx ts-compile-checker
+        working-directory: ./
 ```
 
 ## Options

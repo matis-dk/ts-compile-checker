@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 import fg from "fast-glob";
 import child from "child_process";
-import fs from "fs";
 import chalk from "chalk";
-import { promisify } from "util";
 
 import { cliArguments, cliUsage } from "./cli";
 import { log, logDiffStartEnd } from "./logging";
+import { validatingFile } from "./util";
 
-const v = require("../package.json").version;
+const version = require("../package.json").version;
 
 if (cliArguments.help) {
   console.log(cliUsage);
@@ -16,11 +15,10 @@ if (cliArguments.help) {
 }
 
 if (cliArguments.version) {
-  console.log(v);
+  console.log(version);
   process.exit();
 }
 
-const readFile = promisify(fs.readFile);
 const { spawnSync } = child;
 
 const tscBin = `node_modules/.bin/tsc`;
@@ -96,27 +94,32 @@ async function runCompilationChecks(projectPaths: string[]) {
 
       /** INSTALLATION */
       if (!cliArguments.skip) {
-        try {
-          await readFile(`${projectPath}/package.json`, {
-            encoding: "utf8",
-          }).then(JSON.parse);
-        } catch (err) {
-          log(`❗  Can't find/parse package.json. Skipping!`, {
-            level: "WARN",
-          });
+        const [yarn, npm] = await Promise.all([
+          validatingFile(`${projectPath}/yarn.lock`),
+          validatingFile(`${projectPath}/package-lock.json`),
+        ]);
+
+        if (yarn === false && npm === false) {
+          log(
+            `❗  Can't find a yarn.lock or package-lock.json file in path. Skipping!`,
+            { level: "WARN" }
+          );
           continue;
         }
-        log("•  yarn install");
-        spawnSync("yarn", ["install"], options);
+
+        const yarnOrNpm = yarn ? "yarn" : "npm";
+
+        log(`•  ${yarnOrNpm} install`);
+        spawnSync(yarnOrNpm, ["install"], options);
       }
 
       /** TS COMPILATION */
-      try {
-        await readFile(`${projectPath}/${tscBin}`);
-      } catch (_) {
+      const isValid = validatingFile(`${projectPath}/${tscBin}`);
+      if (!isValid) {
         log(`❗  Can't find 'tsc' in ${tscBin}. Skipping!`, { level: "WARN" });
         continue;
       }
+
       log("•  tsc compilling");
       const output = spawnSync(tscBin, tscArgs, options);
 

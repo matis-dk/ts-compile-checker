@@ -24,7 +24,7 @@ export function log(msg: string, options?: LogOptions) {
     }
 
     if (options?.level === "INFO") {
-      core.info(msg);
+      console.log(msg);
     }
   } else {
     console.log(msg);
