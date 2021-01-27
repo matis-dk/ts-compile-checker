@@ -8,13 +8,15 @@ import { promisify } from "util";
 import { cliArguments, cliUsage } from "./cli";
 import { log, logDiffStartEnd } from "./logging";
 
+const v = require("../package.json").version;
+
 if (cliArguments.help) {
   console.log(cliUsage);
   process.exit();
 }
 
 if (cliArguments.version) {
-  console.log(require("../package.json").version);
+  console.log(v);
   process.exit();
 }
 
