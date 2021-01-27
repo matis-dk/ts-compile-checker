@@ -1,7 +1,7 @@
 import * as core from "@actions/core";
-import chalk from "chalk";
 
-const isCI = Boolean(process.env.CI);
+// const isCI = Boolean(process.env.CI);
+const isCI = true;
 
 export function logDiffStartEnd(label: string, start: bigint, end: bigint) {
   const NS_PER_MS = BigInt(1e6);
@@ -16,11 +16,17 @@ type LogOptions = {
 
 export function log(msg: string, options: LogOptions = { level: "INFO" }) {
   if (isCI) {
-    if (options?.level === "ERROR") core.setFailed(msg);
+    if (options?.level === "ERROR") {
+      core.setFailed(msg);
+    }
 
-    if (options?.level === "WARN") core.warning(msg);
+    if (options?.level === "WARN") {
+      core.warning(msg);
+    }
 
-    if (options?.level === "INFO") core.info(msg);
+    if (options?.level === "INFO") {
+      core.info(msg);
+    }
   } else {
     console.log(msg);
   }
