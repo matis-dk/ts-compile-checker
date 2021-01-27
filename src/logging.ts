@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 
-// const isCI = Boolean(process.env.CI);
-const isCI = true;
+const isCI = Boolean(process.env.CI);
 
 export function logDiffStartEnd(label: string, start: bigint, end: bigint) {
   const NS_PER_MS = BigInt(1e6);

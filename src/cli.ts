@@ -40,10 +40,10 @@ const optionDefinitions = [
   {
     name: "options",
     description:
-      'Override the default options `["--noEmit", "--pretty"]` passed to the tsc compiler for each sub-project',
+      'Override the default options `["--noEmit"]` passed to the tsc compiler for each sub-project',
     alias: "o",
     multiple: true,
-    defaultValue: ["--noEmit", "--pretty"],
+    defaultValue: ["--noEmit"],
     type: String,
   },
   {
