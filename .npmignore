@@ -1,2 +1,4 @@
 assets
 src
+node_modules
+tests
